@@ -1,0 +1,22 @@
+{
+  "name": "coopmonitor",
+  "version": "0.0.0",
+  "description": "Services to monitor and publish the state of a chicken coop.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dylancwood/coopmonitor.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dylancwood/coopmonitor/issues"
+  },
+  "homepage": "https://github.com/dylancwood/coopmonitor",
+  "dependencies": {
+    "config": "^1.12.0"
+  }
+}
