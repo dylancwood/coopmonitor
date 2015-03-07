@@ -1,12 +1,10 @@
 {
     "m2x": {
         "endpoints": {
-            "doorOpen": "http://api-m2x.att.com/v2/devices/1c4a3f699274e63
-            12a5565d262a5e6b2/streams/coop-door-state/value"
-            "temperantureC": "http://api-m2x.att.com/v2/devices/1c4a3f699274e63
-            12a5565d262a5e6b2/streams/coop-temperature/value"
-            "batteryVoltage": "http://api-m2x.att.com/v2/devices/1c4a3f699274e63
-            12a5565d262a5e6b2/streams/battery-voltage/value"
-        }
+            "doorOpen": "http://api-m2x.att.com/v2/devices/1c4a3f699274e6312a5565d262a5e6b2/streams/coop-door-state/value",
+            "temperatureC": "http://api-m2x.att.com/v2/devices/1c4a3f699274e6312a5565d262a5e6b2/streams/coop-temperature/value",
+            "batteryVoltage": "http://api-m2x.att.com/v2/devices/1c4a3f699274e6312a5565d262a5e6b2/streams/battery-voltage/value"
+        },
+        "apiKey": "9b70cbbf2ba1fd043570ae716c2dc78c"
     }
 }
