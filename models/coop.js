@@ -111,14 +111,13 @@ module.exports = function() {
                 else if (sun.sunrise.hour < time.getHours()
                         || (sun.sunrise.hour == time.getHours()
                             && sun.sunrise.minute < time.getMinute())) {
-                        coop.emit('illegalState', 'Door is closed past sunrise.');
-                        callback( false );
-                    }
-                }
-                else {
+                    coop.emit('illegalState', 'Door is closed past sunrise.');
+                    callback( false );
+                } else {
                     // all's good
                     callback( true );
                 }
+            });
     }
 
     return coop;
