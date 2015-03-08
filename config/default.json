@@ -6,5 +6,17 @@
             "batteryVoltage": "http://api-m2x.att.com/v2/devices/1c4a3f699274e6312a5565d262a5e6b2/streams/battery-voltage/value"
         },
         "apiKey": "9b70cbbf2ba1fd043570ae716c2dc78c"
+    },
+    "twilioCredentials": {
+        "sid": "ACe7677a530313d224434b4c46ac031a9d",
+        "token": "1f84fad04e1e91fe3301c3047c5aec64",
+        "from": 5034967581
+    },
+    "test": {
+        "smsRecipients": [
+            5054805346,
+            9712224968,
+            5036472060
+        ]
     }
 }
