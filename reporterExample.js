@@ -1,4 +1,5 @@
-var reporter = require('./lib/coopReporter');
+var events = require('events');
+var reporter = require('./lib/coopReporter')(new events.EventEmitter())
 
 var streamName = 'temperatureC';
 
