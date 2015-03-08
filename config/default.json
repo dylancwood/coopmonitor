@@ -1,11 +1,26 @@
 {
     "m2x": {
-        "endpoints": {
-            "doorOpen": "http://api-m2x.att.com/v2/devices/1c4a3f699274e6312a5565d262a5e6b2/streams/coop-door-state/value",
-            "temperatureC": "http://api-m2x.att.com/v2/devices/1c4a3f699274e6312a5565d262a5e6b2/streams/coop-temperature/value",
-            "batteryVoltage": "http://api-m2x.att.com/v2/devices/1c4a3f699274e6312a5565d262a5e6b2/streams/battery-voltage/value"
-        },
-        "apiKey": "9b70cbbf2ba1fd043570ae716c2dc78c"
+        "urlSeed": "https://api-m2x.att.com/v2/devices",
+        "deviceId": "1c4a3f699274e6312a5565d262a5e6b2",
+        "streams": [
+            {
+                "id": "doorOpen",
+                "label": "Door State"
+            },
+            {
+                "id": "temperatureC",
+                "label": "Coop Temperature"
+            },
+            {
+                "id": "batteryVoltage",
+                "label": "Battery Voltage"
+            },
+            {
+                "id": "aok",
+                "label": "Heartbeat"
+            }
+        ],
+        "apiKey": "a5b5fa7d7876a642468f0b6336587ca9"
     },
     "twilioCredentials": {
         "sid": "ACe7677a530313d224434b4c46ac031a9d",
