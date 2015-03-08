@@ -2,10 +2,12 @@
 
 var events = require('events'),
     five = require('johnny-five'),
-    Edison = require("edison-io"),
-    Wunderground = require('wundergroundnode'),
-    myKey = 'a446b35be2a27a5a';
-    wunderground = new Wunderground(myKey);
+    Edison = require('edison-io'),
+    request = require('request'),
+    weatherKey = 'a446b35be2a27a5a',
+    weatherUrl = 'http://api.wunderground.com/api/'
+        + 'a446b35be2a27a5a'
+        + '/astronomy/q/97133.json',
     board = new five.Board({
         io: new Edison()
     });
@@ -42,13 +44,11 @@ function initDoor(self) {
     // door sensor on D2
     var doorSensor = new five.Button(2);
     doorSensor.on("press", function() {
-        console.log('got a press');
         self.doorOpen = 0;
         self.emit('change', ['doorOpen']);
         self.checkLegality();
     });
     doorSensor.on("release", function() {
-        console.log('got a release');
         self.doorOpen = 1;
         self.emit('change', ['doorOpen']);
         self.checkLegality();
@@ -62,7 +62,7 @@ function initMotor(self) {
     });
 }
 module.exports = function() {
-    var coop = new events.EventEmitter()
+    var coop = new events.EventEmitter();
 
     // set defaults
     coop.doorOpen = 0;
@@ -72,7 +72,7 @@ module.exports = function() {
     board.on('ready', function() {
         initTemperature(coop);
         initBattery(coop);
-        //initMotor(coop);
+        initMotor(coop);
         initDoor(coop);
     });
     coop.toString = function () {
@@ -84,42 +84,51 @@ module.exports = function() {
     };
     coop.openDoor = function () {
         coop.motor.to(10);
+        coop.doorOpen = 1;
+        coop.emit('change', ['doorOpen']);
+        coop.checkLegality();
     };
     coop.closeDoor = function () {
         coop.motor.to(100);
+        coop.doorOpen = 0;
+        coop.emit('change', ['doorOpen']);
+        coop.checkLegality();
     };
 
     coop.checkLegality = function ( callback ) { 
         // check door state against sunrise/sunset
-        wunderground.astronomy()
-            .request('97239', function(err, response){
-                var sun = response.sun_phase;
-                var time = new Date();
+	if (!callback) {
+            callback = function() { return; };
+        }
+        coop.getIsDaytime( function( isDaytime ) {
+            if (coop.doorOpen && !isDaytime ) {
+                coop.emit('illegal', 'Door is open at night.');
+                callback(false);
+            } else if (!coop.doorOpen && isDaytime ) {
+                coop.emit('illegal', 'Door is closed in daytime.');
+                callback(false);
+            } else {
+                callback (true);
+            }
+        });
 
 
-                // if door is open and it's night, emit illegal
-                if (coop.doorOpen) {
-                   // check sunset
-                    if (sun.sunset.hour < time.getHours()
-                        || (sun.sunset.hour == time.getHours()
-                            && sun.sunset.minute < time.getMinute())) {
-                        coop.emit('illegalState', 'Door is open past sunset.');
-                        callback( false );
-                    }
-                }
-                // if door is closed and it's daytime, emit illegal
-                else if (sun.sunrise.hour < time.getHours()
-                        || (sun.sunrise.hour == time.getHours()
-                            && sun.sunrise.minute < time.getMinute())) {
-                        coop.emit('illegalState', 'Door is closed past sunrise.');
-                        callback( false );
-                    }
-                }
-                else {
-                    // all's good
-                    callback( true );
-                }
-    }
+    };
+    coop.getIsDaytime = function( callback ) {
+        request(weatherUrl, function(error, response, body){
+            var sun = JSON.parse(body).sun_phase;
+            var time = new Date();
+
+            callback(
+              ( time.getHours() > sun.sunrise.hours
+                || time.getHours() == sun.sunrise.hours
+                   && time.getMinutes() > sun.sunrise.minutes)
+              &&
+              ( time.getHours() < sun.sunset.hours
+                || time.getHours() == sun.sunrise.hours
+                   && time.getMinutes() < sun.sunrise.minutes  ));
+        });
+    };
 
     return coop;
 }
