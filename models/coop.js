@@ -40,7 +40,7 @@ function initDoor(self) {
         self[doorOpen] = true;
     });
 }
-class Coop {
+class Coop extends events.EventEmitter{
     constructor() {
         // set defaults
         this[doorOpen] = false;
@@ -51,9 +51,9 @@ class Coop {
           initTemperature(this);
           initBattery(this);
           initDoor(this);
-
         });
-    }
+        super(); 
+    };
     toString() {
         var self = this;
         return JSON.stringify({
@@ -61,10 +61,23 @@ class Coop {
             temperatureC: self[temperatureC],
             batteryVoltage: self[batteryVoltage],
         });
+    };
+
+    get doorOpen() { return this[doorOpen]; };
+    get temperatureC() { return this[temperatureC]; };
+    get batteryVoltage() { return this[batteryVoltage]; };
+    set doorOpen(newVal) {
+        this[doorOpen] = newVal;
+        this.emit('change', ['doorOpen']);
     }
-    get doorOpen() { return this[doorOpen]; }
-    get temperatureC() { return this[temperatureC]; }
-    get batteryVoltage() { return this[batteryVoltage]; }
+    set temperatureC(newVal) {
+        this[temperatureC] = newVal;
+        this.emit('change', ['temperatureC']);
+    };
+    set batteryVoltage(newVal) {
+        this[batteryVoltage] = newVal;i
+        this.emit('change', ['batteryVoltage']);
+    };
 }
 
 module.exports = Coop;
