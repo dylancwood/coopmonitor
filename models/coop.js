@@ -1,6 +1,11 @@
+'use strict';
+
 var events = require('events'),
     five = require('johnny-five'),
     Edison = require("edison-io"),
+    Wunderground = require('wundergroundnode'),
+    myKey = 'a446b35be2a27a5a';
+    wunderground = new Wunderground(myKey);
     board = new five.Board({
         io: new Edison()
     });
@@ -40,11 +45,13 @@ function initDoor(self) {
         console.log('got a press');
         self.doorOpen = 0;
         self.emit('change', ['doorOpen']);
+        self.checkLegality();
     });
     doorSensor.on("release", function() {
         console.log('got a release');
         self.doorOpen = 1;
         self.emit('change', ['doorOpen']);
+        self.checkLegality();
     });
 }
 function initMotor(self) {
@@ -77,9 +84,42 @@ module.exports = function() {
     };
     coop.openDoor = function () {
         coop.motor.to(10);
-    }
+    };
     coop.closeDoor = function () {
         coop.motor.to(100);
+    };
+
+    coop.checkLegality = function ( callback ) { 
+        // check door state against sunrise/sunset
+        wunderground.astronomy()
+            .request('97239', function(err, response){
+                var sun = response.sun_phase;
+                var time = new Date();
+
+
+                // if door is open and it's night, emit illegal
+                if (coop.doorOpen) {
+                   // check sunset
+                    if (sun.sunset.hour < time.getHours()
+                        || (sun.sunset.hour == time.getHours()
+                            && sun.sunset.minute < time.getMinute())) {
+                        coop.emit('illegalState', 'Door is open past sunset.');
+                        callback( false );
+                    }
+                }
+                // if door is closed and it's daytime, emit illegal
+                else if (sun.sunrise.hour < time.getHours()
+                        || (sun.sunrise.hour == time.getHours()
+                            && sun.sunrise.minute < time.getMinute())) {
+                        coop.emit('illegalState', 'Door is closed past sunrise.');
+                        callback( false );
+                    }
+                }
+                else {
+                    // all's good
+                    callback( true );
+                }
     }
+
     return coop;
 }
