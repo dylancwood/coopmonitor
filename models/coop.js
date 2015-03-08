@@ -7,6 +7,7 @@ let five = require('johnny-five'),
 let doorOpen = Symbol('doorOpen');
 let temperatureC = Symbol('temperatureC');
 let batteryVoltage = Symbol('batteryVoltage');
+let motor = Symbol('motor');
 
 function initTemperature(self) {
     // temperature sensor  on A0
@@ -39,6 +40,10 @@ function initDoor(self) {
     doorSensor.on("release", function() {
         self[doorOpen] = true;
     });
+}
+function initMotor(self) {
+    // servo motor on D3
+    self[motor] = new five.Servo(3);
 }
 class Coop {
     constructor() {
