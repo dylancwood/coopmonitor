@@ -1,7 +1,7 @@
 var Coop = require('./models/coop'),
     coopReporter = require('./lib/coopReporter'),
     smsReporter = require('./lib/smsReporter'),
-    socket = require('socket.io-client')('http://localhost:3000'),
+    socket = require('socket.io-client')('http://coopmonitor.azurewebsites.net'),
     myCoop = new Coop();
 
 // set up reporter
@@ -15,13 +15,19 @@ setInterval(function() {
 
 // send heartbeat to log
 setInterval(function() {
-    console.log('heartbeat');
-    myCoop.trigger('heartbeat');
-}, 1000 * 5); // todo: send heartbeat every 10 minutes
+    myCoop.emit('heartbeat');
+}, 1000 * 10); // todo: send heartbeat every 10 minutes 
 
-socket.on('doorOpen', function() {
-    myCoop.openDoor();
+socket.on('doorChangePlease', function( cmd ) {
+    console.log('got socket doorchange event');
+    if (cmd.action === 'open') {
+        myCoop.openDoor();
+    } else {
+        myCoop.closeDoor();
+    }
 });
-socket.on('doorClose', function() {
-    myCoop.closeDoor();
+
+myCoop.on('change', function() {
+    console.log('emitting state change');
+    socket.emit('coopStateChanged', { test: 0 });
 });
