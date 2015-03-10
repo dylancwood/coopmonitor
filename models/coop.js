@@ -19,7 +19,7 @@ function initTemperature(self) {
         pin: "A0",
         freq: 10000
     });
-    temperature.on("change", function(err, data) {
+    temperature.on("change", function (err, data) {
         var newVal = Math.round(temperature.celsius);
         if (self.temperatureC != newVal) {
             self.temperatureC = newVal;
@@ -35,7 +35,7 @@ function initBattery(self) {
         threshold: 10
     });
 
-    battery.scale(0,100).on('change', function() {
+    battery.scale(0,100).on('change', function () {
         self.batteryVoltage = this.value;
         self.emit('change', ['batteryVoltage']);
     });
@@ -43,12 +43,12 @@ function initBattery(self) {
 function initDoor(self) {
     // door sensor on D2
     var doorSensor = new five.Button(2);
-    doorSensor.on("press", function() {
+    doorSensor.on("press", function () {
         self.doorOpen = 0;
         self.emit('change', ['doorOpen']);
         self.checkLegality();
     });
-    doorSensor.on("release", function() {
+    doorSensor.on("release", function () {
         self.doorOpen = 1;
         self.emit('change', ['doorOpen']);
         self.checkLegality();
@@ -61,7 +61,7 @@ function initMotor(self) {
         startAt: 10
     });
 }
-module.exports = function() {
+module.exports = function () {
     var coop = new events.EventEmitter();
 
     // set defaults
@@ -69,7 +69,7 @@ module.exports = function() {
     coop.temperatureC = 0;
     coop.batteryVoltage = 99;
 
-    board.on('ready', function() {
+    board.on('ready', function () {
         initTemperature(coop);
         initBattery(coop);
         initMotor(coop);
@@ -95,12 +95,12 @@ module.exports = function() {
         coop.checkLegality();
     };
 
-    coop.checkLegality = function ( callback ) { 
+    coop.checkLegality = function (callback) { 
         // check door state against sunrise/sunset
 	if (!callback) {
-            callback = function() { return; };
+            callback = function () { return; };
         }
-        coop.getIsDaytime( function( isDaytime ) {
+        coop.getIsDaytime( function (isDaytime) {
             if (coop.doorOpen && !isDaytime ) {
                 coop.emit('illegal', 'Door is open at night.');
                 callback(false);
@@ -114,20 +114,50 @@ module.exports = function() {
 
 
     };
-    coop.getIsDaytime = function( callback ) {
-        request(weatherUrl, function(error, response, body){
-            var sun = JSON.parse(body).sun_phase;
-            var time = new Date();
+    coop.getIsDaytime = function (callback) {
+        var currentTime = new Date();
 
-            callback(
-              ( time.getHours() > sun.sunrise.hours
-                || time.getHours() == sun.sunrise.hours
-                   && time.getMinutes() > sun.sunrise.minutes)
+        var doDayTest = function () {
+            var sun = coop.sun;
+            return callback(
+              ( currentTime.getHours() > sun.sunrise.hours
+                || currentTime.getHours() == sun.sunrise.hours
+                   && currentTime.getMinutes() > sun.sunrise.minutes)
               &&
-              ( time.getHours() < sun.sunset.hours
-                || time.getHours() == sun.sunrise.hours
-                   && time.getMinutes() < sun.sunrise.minutes  ));
-        });
+              ( currentTime.getHours() < sun.sunset.hours
+                || currentTime.getHours() == sun.sunrise.hours
+                   && currentTime.getMinutes() < sun.sunrise.minutes  ));
+        };
+
+        // set a default sunrise/sunset
+        coop.sun = coop.sun || {
+            sunrise: {
+                hours: '7',
+                minutes: '0'
+            },
+            sunset: {
+                hours: '19',
+                minutes: '0'
+            }
+        };
+        coop.lastCheck = coop.lastCheck || '20150101' // default to the past
+
+        var today = currentTime.getFullYear() +
+            currentTime.getMonth() +
+            currentTime.getDay();
+
+        // if the sun phase was queried before today, refresh the cache
+        if (today > coop.lastCheck) {
+            request(weatherUrl, function (error, response, body) {
+                if (!error) {
+                    coop.lastCheck = today;
+                    coop.sun = JSON.parse(body).sun_phase;
+                }
+                doDayTest();
+            });
+        } else {
+            doDayTest();
+        }
     };
 
     return coop;
