@@ -80,8 +80,8 @@ var Daytime = function () {
      * false otherwise.
      */
     daytime.getIsDaytime = function () {
-        return new Promise( function (resolve, reject) {
-            daytime.getSunPhase()
+        console.log('doing is daytime');
+        return daytime.getSunPhase()
             .then( function (sun) {
                 // get HHMM string for comparing current time
                 var currentTime = getTimeStr(new Date());
@@ -97,10 +97,9 @@ var Daytime = function () {
                 time.setHours(sun.sunrise.hours, sun.sunrise.minutes);
                 var sunrise = getTimeStr(time);
 
-                resolve( currentTime > sunrise && currentTime < sunset );
+                return currentTime > sunrise && currentTime < sunset;
             });
-        });
     }
     return daytime;
 };
-
+module.exports = Daytime;
