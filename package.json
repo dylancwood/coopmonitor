@@ -19,10 +19,6 @@
   "dependencies": {
     "babel": "^4.7.3",
     "config": "^1.12.0",
-    "cylon": "^0.22.1",
-    "cylon-gpio": "^0.22.0",
-    "cylon-i2c": "^0.20.0",
-    "cylon-intel-iot": "^0.5.0",
     "edison-io": "^0.8.1",
     "johnny-five": "^0.8.47",
     "request": "^2.53.0",
