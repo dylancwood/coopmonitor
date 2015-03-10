@@ -34,6 +34,7 @@
         ]
     },
     "wunderground": {
-        "apiKey": "a446b35be2a27a5a"
+        "apiKey": "a446b35be2a27a5a",
+        "zipCode": "98107"
     }
 }
