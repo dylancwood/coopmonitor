@@ -4,9 +4,9 @@ var events = require('events'),
     five = require('johnny-five'),
     Edison = require('edison-io'),
     request = require('request'),
-    weatherKey = 'a446b35be2a27a5a',
+    config = require('config'),
     weatherUrl = 'http://api.wunderground.com/api/'
-        + 'a446b35be2a27a5a'
+        config.get('wunderground.apiKey'),
         + '/astronomy/q/97133.json',
     board = new five.Board({
         io: new Edison()
