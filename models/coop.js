@@ -3,11 +3,7 @@
 var events = require('events'),
     five = require('johnny-five'),
     Edison = require('edison-io'),
-    request = require('request'),
-    config = require('config'),
-    weatherUrl = 'http://api.wunderground.com/api/'
-        config.get('wunderground.apiKey'),
-        + '/astronomy/q/97133.json',
+    daytime = new (require('./daytime'))(),
     board = new five.Board({
         io: new Edison()
     });
@@ -95,70 +91,31 @@ module.exports = function () {
         coop.checkLegality();
     };
 
-    coop.checkLegality = function (callback) { 
+    /**
+     * Checks the legality of the coop state. Currently, this
+     * only involves checking whether the door is open at night
+     * or closed during the day. As a side-effect, this method
+     * will also cause the coop to emit an 'illegal' if it is
+     * found to be in an illegal state, with details about the
+     * offense.
+     * @return {Promise} a promise that resolves to true if
+     * the coop is in a legal state and false otherwise.
+     */
+    coop.checkLegality = function () { 
         // check door state against sunrise/sunset
-	if (!callback) {
-            callback = function () { return; };
-        }
-        coop.getIsDaytime( function (isDaytime) {
-            if (coop.doorOpen && !isDaytime ) {
-                coop.emit('illegal', 'Door is open at night.');
-                callback(false);
-            } else if (!coop.doorOpen && isDaytime ) {
-                coop.emit('illegal', 'Door is closed in daytime.');
-                callback(false);
-            } else {
-                callback (true);
-            }
-        });
-
-
-    };
-    coop.getIsDaytime = function (callback) {
-        var currentTime = new Date();
-
-        var doDayTest = function () {
-            var sun = coop.sun;
-            return callback(
-              ( currentTime.getHours() > sun.sunrise.hours
-                || currentTime.getHours() == sun.sunrise.hours
-                   && currentTime.getMinutes() > sun.sunrise.minutes)
-              &&
-              ( currentTime.getHours() < sun.sunset.hours
-                || currentTime.getHours() == sun.sunrise.hours
-                   && currentTime.getMinutes() < sun.sunrise.minutes  ));
-        };
-
-        // set a default sunrise/sunset
-        coop.sun = coop.sun || {
-            sunrise: {
-                hours: '7',
-                minutes: '0'
-            },
-            sunset: {
-                hours: '19',
-                minutes: '0'
-            }
-        };
-        coop.lastCheck = coop.lastCheck || '20150101' // default to the past
-
-        var today = currentTime.getFullYear() +
-            currentTime.getMonth() +
-            currentTime.getDay();
-
-        // if the sun phase was queried before today, refresh the cache
-        if (today > coop.lastCheck) {
-            request(weatherUrl, function (error, response, body) {
-                if (!error) {
-                    coop.lastCheck = today;
-                    coop.sun = JSON.parse(body).sun_phase;
+        return daytime.getIsDaytime()
+            .then( function (isDaytime) {
+                if (coop.doorOpen && !isDaytime ) {
+                    coop.emit('illegal', 'Door is open at night.');
+                    return false;
+                } else if (!coop.doorOpen && isDaytime ) {
+                    coop.emit('illegal', 'Door is closed in daytime.');
+                    return false;
+                } else {
+                    return true;
                 }
-                doDayTest();
             });
-        } else {
-            doDayTest();
-        }
-    };
 
+    };
     return coop;
 }
