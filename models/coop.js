@@ -39,7 +39,7 @@ function initBattery(self) {
 }
 function initDoor(self) {
     // door sensor on D2
-    var doorSensor = new five.Button(2);
+    var doorSensor = new five.Button(config.get('boardPins.door'));
     doorSensor.on("press", function () {
         self.doorOpen = 0;
         self.emit('change', ['doorOpen']);

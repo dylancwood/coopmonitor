@@ -41,5 +41,6 @@
         "temperature": "A0",
         "battery": "A1",
         "motor": 3
+        "door": 2
     }
 }
