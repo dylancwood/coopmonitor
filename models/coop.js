@@ -1,6 +1,7 @@
 'use strict';
 
 var events = require('events'),
+    config = require('config'),
     five = require('johnny-five'),
     Edison = require('edison-io'),
     daytime = new (require('./daytime'))(),
@@ -12,7 +13,7 @@ function initTemperature(self) {
     // temperature sensor  on A0
     var temperature = new five.Temperature({
         controller: "GROVE",
-        pin: "A0",
+        pin: config.get('boardPins.temperature'),
         freq: 10000
     });
     temperature.on("change", function (err, data) {
@@ -26,7 +27,7 @@ function initTemperature(self) {
 function initBattery(self) {
     // battery sensor on A1
     var battery = new five.Sensor({
-        pin: 'A1',
+        pin: config.get('boardPins.battery'),
         freq: 50,
         threshold: 10
     });
@@ -53,7 +54,7 @@ function initDoor(self) {
 function initMotor(self) {
     // servo motor on D3
     self.motor = new five.Servo({
-        pin: 3,
+        pin: config.get('boardPins.motor'),
         startAt: 10
     });
 }

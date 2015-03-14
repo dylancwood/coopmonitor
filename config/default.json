@@ -36,5 +36,10 @@
     "wunderground": {
         "apiKey": "a446b35be2a27a5a",
         "zipCode": "98107"
+    },
+    "boardPins": {
+        "temperature": "A0",
+        "battery": "A1",
+        "motor": 3
     }
 }
